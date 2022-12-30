@@ -18,7 +18,7 @@ public class RoomEntity {
 
     private String id;
     private String name;
-
+    private int onlineNumber;
     private boolean enable;
 
     public String getId() {
@@ -43,5 +43,13 @@ public class RoomEntity {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
+    }
+
+    public int getOnlineNumber() {
+        return onlineNumber;
+    }
+
+    public void setOnlineNumber(int onlineNumber) {
+        this.onlineNumber = onlineNumber;
     }
 }

@@ -44,4 +44,6 @@ public class AnonymousLoginController {
             return Result.fail(e);
         }
     }
+
+
 }
