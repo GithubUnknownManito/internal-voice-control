@@ -21,6 +21,8 @@ public class RoomEntity {
     private int onlineNumber;
     private boolean enable;
 
+    private boolean voiceStatus;
+
     public String getId() {
         return id;
     }
@@ -51,5 +53,13 @@ public class RoomEntity {
 
     public void setOnlineNumber(int onlineNumber) {
         this.onlineNumber = onlineNumber;
+    }
+
+    public boolean isVoiceStatus() {
+        return voiceStatus;
+    }
+
+    public void setVoiceStatus(boolean voiceStatus) {
+        this.voiceStatus = voiceStatus;
     }
 }

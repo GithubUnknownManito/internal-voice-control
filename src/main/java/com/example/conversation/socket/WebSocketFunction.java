@@ -33,18 +33,14 @@ public class WebSocketFunction {
         return copyOnWriteArrayList.stream().filter(e -> e.getParam() == grid);
     }
 
-    public static void Broadcast(Collection<? extends Session> list, String text){
+    public static void Broadcast(Collection<WebSocketSession> list, String text){
         list.forEach(e -> {
             Broadcast(e, text);
         });
     }
 
-    public static void Broadcast(Session session, String text){
-        try {
-            session.getBasicRemote().sendText(text);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static void Broadcast(WebSocketSession session, String text){
+        session.sendText(text);
     }
 
     public static void BroadcastCommand(int code, String msg){
@@ -56,7 +52,7 @@ public class WebSocketFunction {
     }
 
     public void BroadcastCommandToOthers(Session session, int code, String msg){
-        Broadcast(GetRoomSessionStream(grid).filter(e -> e.getId() != session.getId()).collect(Collectors.toList()), JSON.toJSONString(new Result(code, msg)));
+        Broadcast(GetRoomSessionStream(grid).filter(e -> e.getSessionId() != session.getId()).collect(Collectors.toList()), JSON.toJSONString(new Result(code, msg)));
     }
 
     public void SendCommand(Session session, int code, String msg) throws IOException {
@@ -66,30 +62,22 @@ public class WebSocketFunction {
     public void SendTextToUser(int code,String grid, Object content) throws IOException {
         WebSocketMessage webSocketMessage = new WebSocketMessage();
         webSocketMessage.setFrom(this.grid);
-        webSocketMessage.setModel("ROOM");
+        webSocketMessage.setModel("PEOPLE");
         webSocketMessage.setContent(content);
         String Message = JSON.toJSONString(new Result<>(code, webSocketMessage));
-        GetSession(grid).getBasicRemote().sendText(Message);
+        GetSession(grid).sendText(Message);
     }
 
     public void SendTextToRoom(int code,String room, Object content) throws IOException {
-        int err = 0;
         List<WebSocketSession> list = GetRoomSession(room);
         WebSocketMessage webSocketMessage = new WebSocketMessage();
         webSocketMessage.setFrom(this.grid);
         webSocketMessage.setContent(content);
-        webSocketMessage.setModel("PEOPLE");
+        webSocketMessage.setModel("ROOM");
         String Message = JSON.toJSONString(new Result<>(code, webSocketMessage));
         for (int i = 0; i < list.size(); i++) {
-            Session session = list.get(i);
-            try {
-                session.getBasicRemote().sendText(Message);
-            } catch (IOException e) {
-                e.printStackTrace();
-                if((err+=1) > list.size()){
-                    throw new RuntimeException(e);
-                }
-            }
+            WebSocketSession session = list.get(i);
+            session.sendText(Message);
         }
     }
 
@@ -97,20 +85,28 @@ public class WebSocketFunction {
         try {
             switch (code) {
                 case 200: {
-                    BroadcastCommand(session, 201, "心跳回复");
+                    BroadcastCommand(session, 200, "心跳回复");
                     break;
                 }
                 case 300: {
                     //发送消息
-                    SendTextToRoom(301,to , msg);
+                    SendTextToRoom(300,to , msg);
                 }
                 case 400:{
-                    //语音邀请
+                    //语音邀请,占据房主
+                    SendTextToRoom(400,to , msg);
+                }
+                case 420:{
+                    //请求房间内所有人的通话句柄
+                    SendTextToRoom(420,to , msg);
+                }
+                case 490:{
+                    //退出语音
                     SendTextToRoom(401,to , msg);
                 }
                 case 500: {
                     //交手协议
-                    SendTextToRoom(501,to , msg);
+                    SendTextToRoom(500,to , msg);
                 }
             }
         } catch (IOException e) {
@@ -121,24 +117,36 @@ public class WebSocketFunction {
         try {
             switch (code) {
                 case 200: {
-                    BroadcastCommand(session, 201, "心跳回复");
+                    BroadcastCommand(session, 200, "心跳回复");
                     break;
                 }
                 case 300: {
                     //发送消息
-                    SendTextToRoom(301,to , msg);
+                    SendTextToUser(300,to , msg);
                 }
                 case 400:{
                     //语音邀请
-                    SendTextToRoom(401,to , msg);
+                    SendTextToUser(400,to , msg);
+                }
+                case 411:{
+                    //语音邀请-同意
+                    SendTextToUser(401,to , msg);
+                }
+                case 412:{
+                    //语音邀请-失败
+                    SendTextToUser(402,to , msg);
+                }
+                case 490:{
+                    //退出语音
+                    SendTextToUser(402,to , msg);
                 }
                 case 500: {
                     //交手协议
-                    SendTextToRoom(501,to , msg);
+                    SendTextToUser(500,to , msg);
                 }
                 case 900: {
                     //私密消息不记录信息
-                    SendTextToRoom(900,to , msg);
+                    SendTextToUser(900,to , msg);
                 }
             }
         } catch (IOException e) {

@@ -14,29 +14,30 @@ import java.io.IOException;
 @Component
 @ServerEndpoint(value = "/data/{room}/{grid}")
 public class WebSocketServer extends  WebSocketFunction {
-
     @OnOpen
-    public void OnOpen(WebSocketSession session, @PathParam(value = "room") String room, @PathParam(value = "grid") String grid) throws IOException {
+    public void OnOpen(@PathParam(value = "room") String room, @PathParam(value = "grid") String grid, Session session) throws IOException {
         // name是用来表示唯一客户端，如果需要指定发送，需要指定发送通过name来区分
-        session.setParam(this.room = room);
-        session.setGrid(this.grid = grid);
+        WebSocketSession webSocketSession = new WebSocketSession();
+        webSocketSession.setSession(session);
+        webSocketSession.setParam(this.room = room);
+        webSocketSession.setGrid(this.grid = grid);
         boolean online = copyOnWriteArrayList.stream().filter(e -> e.getGrid().equals(grid)).findAny().isPresent();
         if(online){
-            BroadcastCommand(session, 105, "已经登录过了哦，不能在登录哦");
+            BroadcastCommand(session, 120, "已经登录过了哦，不能在登录哦");
             session.close();
             return;
         }
-        copyOnWriteArrayList.add(session);
+        copyOnWriteArrayList.add(webSocketSession);
         BroadcastCommandToOthers(session, 100, "有新人加入啦~");
     }
 
     @OnClose
     public void onClose(Session session) {
-        WebSocketSession webSession = copyOnWriteArrayList.stream().filter(e -> e.getId() == session.getId()).findAny().get();
+        WebSocketSession webSession = copyOnWriteArrayList.stream().filter(e -> e.getSessionId() == session.getId()).findAny().get();
         if(webSession!= null){
             copyOnWriteArrayList.remove(webSession);
         }
-        BroadcastCommandToOthers(session, 105, "有新人退出啦~");
+        BroadcastCommandToOthers(session, 150, "有新人退出啦~");
     }
 
     @OnMessage
@@ -48,7 +49,7 @@ public class WebSocketServer extends  WebSocketFunction {
         String to = data.getString("to");
         String form = data.getString("form");
         String msg = data.getString("msg");
-        if(code != 900){
+        if(code != 900 && code != 200){
             if(model.equals("room")){
                 log.info("客户端[{}]将消息:[{}]，发送到了房间{}",form, msg, to);
             } else {
