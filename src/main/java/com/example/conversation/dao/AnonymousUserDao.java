@@ -23,10 +23,10 @@ public class AnonymousUserDao {
             anonymousUserStream = anonymousUserStream.filter(e -> Objects.nonNull(e.getId()) && e.getId().equals(anonymousUser.getId()));
         }
         if(anonymousUser.getName() != null){
-            anonymousUserStream = anonymousUserStream.filter(e -> Objects.nonNull(e.getId()) && e.getName().indexOf(anonymousUser.getName()) > -1 );
+            anonymousUserStream = anonymousUserStream.filter(e -> Objects.nonNull(e.getName()) && e.getName().indexOf(anonymousUser.getName()) > -1 );
         }
         if(anonymousUser.getRoomId() != null){
-            anonymousUserStream = anonymousUserStream.filter(e -> Objects.nonNull(e.getId()) && e.getRoomId().equals(anonymousUser.getRoomId()) );
+            anonymousUserStream = anonymousUserStream.filter(e -> Objects.nonNull(e.getRoomId()) && e.getRoomId().equals(anonymousUser.getRoomId()) );
         }
         return anonymousUserStream.collect(Collectors.toList());
     }

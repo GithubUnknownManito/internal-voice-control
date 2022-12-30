@@ -11,7 +11,7 @@
     <groupId>com.example</groupId>
     <artifactId>Conversation</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Conversation</name>
+    <name>internal-voice-control</name>
     <description>Conversation</description>
     <properties>
         <java.version>1.8</java.version>
