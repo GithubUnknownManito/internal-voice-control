@@ -5,6 +5,8 @@ public class WebSocketMessage<T> {
     private String model;
     private T content;
 
+    private Long stamp = System.currentTimeMillis();
+
     public String getFrom() {
         return from;
     }
@@ -27,5 +29,15 @@ public class WebSocketMessage<T> {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public Long getStamp() {
+        return stamp;
+    }
+
+    public void setStamp(Long stamp) {
+        if(stamp != -1){
+            this.stamp = stamp;
+        }
     }
 }

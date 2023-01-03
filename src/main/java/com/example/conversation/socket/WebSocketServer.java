@@ -9,6 +9,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -33,7 +34,11 @@ public class WebSocketServer extends  WebSocketFunction {
 
     @OnClose
     public void onClose(Session session) {
-        WebSocketSession webSession = copyOnWriteArrayList.stream().filter(e -> e.getSessionId() == session.getId()).findAny().get();
+        Optional<WebSocketSession> optional = copyOnWriteArrayList.stream().filter(e -> e.getSessionId() == session.getId()).findAny();
+        WebSocketSession webSession = null;
+        if(optional.isPresent()){
+            webSession = optional.get();
+        }
         if(webSession!= null){
             copyOnWriteArrayList.remove(webSession);
         }
@@ -45,30 +50,30 @@ public class WebSocketServer extends  WebSocketFunction {
         log.info("服务端收到客户端[{}]的消息:{}", session.getId(), message);
         JSONObject data = JSON.parseObject(message);
         int code = data.getIntValue("code");
-        String model = data.getString("model");
+        String model = data.getString("model").toUpperCase();
         String to = data.getString("to");
         String form = data.getString("form");
         String msg = data.getString("msg");
+        Long stamp = data.getLong("stamp");
         if(code != 900 && code != 200){
-            if(model.equals("room")){
-                log.info("客户端[{}]将消息:[{}]，发送到了房间{}",form, msg, to);
+            if(model.equals("ROOM")){
+                log.info("时间：[{}]客户端[{}]将消息:[{}]，发送到了房间{}",stamp,form, msg, to);
             } else {
-                log.info("客户端[{}]将消息:[{}]，发送到了个人{}",form, msg, to);
+                log.info("时间：[{}]客户端[{}]将消息:[{}]，发送到了个人{}",stamp,form, msg, to);
             }
         }
 
-        if(model.equals("room")){
-            RoomSwitch(session, code,to, msg);
+        if(model.equals("ROOM")){
+            RoomSwitch(session, code,to, msg,stamp);
         } else {
-            UserSwitch(session, code,to, msg);
+            UserSwitch(session, code,to, msg,stamp);
         }
 
     }
 
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error("发生错误");
-        error.printStackTrace();
+        log.error("发生错误", error);
     }
 
 }
