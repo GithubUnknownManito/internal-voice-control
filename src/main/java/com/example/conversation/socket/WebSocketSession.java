@@ -1,7 +1,10 @@
 package com.example.conversation.socket;
 
-import javax.websocket.Session;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.websocket.Session;
+import java.io.IOException;
+@Slf4j
 public class WebSocketSession {
     private String param;
     private String grid;
@@ -42,6 +45,12 @@ public class WebSocketSession {
     }
 
     public void sendText(String text){
-        this.session.getAsyncRemote().sendText(text);
+        log.info("发送客户端[{}]的消息:{}", session.getId(), text);
+        try {
+            this.session.getBasicRemote().sendText(text);
+        } catch (IOException e) {
+            e.printStackTrace();
+//            throw new RuntimeException(e);
+        }
     }
 }
