@@ -57,7 +57,9 @@ public class WebSocketFunction {
     }
 
     public void SendCommand(Session session, int code, String msg) throws IOException {
-        session.getBasicRemote().sendText(JSON.toJSONString(new Result(code, msg)));
+        synchronized (session) {
+            session.getBasicRemote().sendText(JSON.toJSONString(new Result(code, msg)));
+        }
     }
 
     public void SendTextToUser(int code,String grid, Object content,Long stamp) throws IOException {
