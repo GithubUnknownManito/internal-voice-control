@@ -47,7 +47,9 @@ public class WebSocketSession {
     public void sendText(String text){
         log.info("发送客户端[{}]的消息:{}", session.getId(), text);
         try {
-            this.session.getBasicRemote().sendText(text);
+            synchronized (session) {
+                this.session.getBasicRemote().sendText(text);
+            }
         } catch (IOException e) {
             e.printStackTrace();
 //            throw new RuntimeException(e);
